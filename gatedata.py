@@ -115,7 +115,6 @@ def insertCode(code, user):
     if(q):
         # Update Code
         q = session.query(Codes).filter(Codes.user_id == user).update({Codes.user_id : user})
-        #q.update({Codes.user_id: user})  
     else:
         #Add code for new user
         codedb = Codes(code_id = code, user_id = user)
@@ -123,40 +122,39 @@ def insertCode(code, user):
 
     session.commit()
 
-    #p=session.query(Codes).filter(Codes.user_id == 1).first()
-    #print(p.code_id)
-    #print("print2")
-    
     return code
 
+#Verify if code is expired (1 min)
 def isCodeExpired(code, user):
+
     q = session.query(Codes).filter(Codes.user_id == user).first()
     time = datetime.datetime.utcnow()
     expired = q.createdAt + datetime.timedelta(minutes=1)
-    #print(q.createdAt - expired)
+
     if(time < expired):
         return False
     else:
         return True
 
+#Verify if code introduced matches with the one in the database
 def isCodeCorrect(code, user):
 
     q = session.query(Codes).filter(Codes.user_id == user).first()
-    
-    #print(q.code_id)
 
     if (isCodeExpired(code, user) == False):
         if (code == q.code_id):
-            return code
+            return "!!! Code valid !!!"
         else:
-            return "Invalid Code"
+            return "!!! Code not valid !!!"
     else:
-        return "Expired Code"
+        return "!!! Expired Code !!!"
 
+#Delete Old Code on the Database
 def deleteOldCode(user):
 
     q = session.query(Codes).filter(Codes.user_id == user).delete()
     session.commit()
+
     return
 
 
