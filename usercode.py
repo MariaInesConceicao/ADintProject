@@ -1,7 +1,6 @@
-import json, requests
 from os import abort
 from flask import Flask, request, jsonify, make_response
-from gatedata import isCodeCorrect, insertCode, code_generator, deleteOldCode
+from userdata import isCodeCorrect, insertCode, code_generator, deleteOldCode
 
 app = Flask(__name__)
 
@@ -21,18 +20,21 @@ app = Flask(__name__)
 
 
 
-@app.route('/updatecode/<user>', methods=['GET'])
-def updateUserCode(user):
+@app.route('/getcode/<user>', methods=['GET'])
+def getCode(user):
     if request.method == 'GET':
+
         #Delete previous code in db
         deleteOldCode(user)
         
         #Create code for gate
         code = code_generator()
+
         #Inser new code in db
         insertCode(code, user)
-        
-        #place code in db
+        print("Code received")
+        print("<<<", code, ">>>")
+
         return code
     else:
         abort(400) #BadRequest
@@ -40,9 +42,6 @@ def updateUserCode(user):
 @app.route('/usercode/<code>/<user>', methods=['GET'])
 def validateUserCode(code, user):
     if request.method == 'GET':
-        
-        #teste=isCodeExpired(code, user)
-        #print(teste)
         return isCodeCorrect(code, user)
     else:
         abort(404)
