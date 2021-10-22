@@ -212,7 +212,7 @@ def getCode(user):
     else:
         abort(400) #BadRequest
 
-@app.route('/usercode/<code>/<user>', methods=['GET'])
+@app.route('/users/<user>/codes/<code>', methods=['GET'])
 def validateUserCode(code, user):
     if request.method == 'GET':
         return isCodeCorrect(code, user)
