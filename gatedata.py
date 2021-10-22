@@ -7,7 +7,7 @@ import uuid
 import string, random
 
 # Flask imports
-from flask import Flask, render_template, request, send_from_directory, redirect, url_for
+from flask import Flask, render_template, request, send_from_directory, redirect, url_for, json
 from flask import jsonify
 from flask import abort, redirect, url_for
 
@@ -143,11 +143,11 @@ def isCodeCorrect(code, user):
 
     if (isCodeExpired(code, user) == False):
         if (code == q.code_id):
-            return "!!! Code valid !!!"
+            return jsonify("!!! Code valid !!!")
         else:
-            return "!!! Code not valid !!!"
+            return jsonify("!!! Code not valid !!!")
     else:
-        return "!!! Expired Code !!!"
+        return jsonify("!!! Expired Code !!!")
 
 #Delete Old Code on the Database
 def deleteOldCode(user):
@@ -193,6 +193,31 @@ def registerGate():
         # Display secret
         serializable_res = [r._asdict() for r in result]
         return jsonify(serializable_res)
+
+@app.route('/getcode/<user>', methods=['GET'])
+def getCode(user):
+    if request.method == 'GET':
+
+        #Delete previous code in db
+        deleteOldCode(user)
+        
+        #Create code for gate
+        code = code_generator()
+
+        #Inser new code in db
+        insertCode(code, user)
+        print(code)
+
+        return jsonify(code)
+    else:
+        abort(400) #BadRequest
+
+@app.route('/usercode/<code>/<user>', methods=['GET'])
+def validateUserCode(code, user):
+    if request.method == 'GET':
+        return isCodeCorrect(code, user)
+    else:
+        abort(404)
 
 
 if __name__ == "__main__":
